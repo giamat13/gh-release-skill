@@ -14,6 +14,9 @@ Read the repo; do not ask what it can tell you. Run commands in the shell the pl
 | Tests with fixed ports or shared state | Search test files for fixed ports / shared temp folders; they cannot run in parallel |
 | Release notes | A `docs/release-notes-*`, `CHANGELOG.md`, or none |
 | Build output | Workflow `upload-artifact` / release `files:` entries; the packaging spec files |
+| Program users install or run | Installers or executables in the release (`upload-artifact` / `files:`), entry points (`[project.scripts]` in `pyproject.toml`, `electron-builder` in `package.json`, `tauri.conf.json`, `OutputType` `Exe` or `WinExe` in `*.csproj`, `[[bin]]` in `Cargo.toml`). A library that only publishes to a package registry has none. |
+| Installer and portable EXE tooling | Search for `*.iss` (Inno Setup), `*.nsi` (NSIS), `*.spec` (PyInstaller), `dotnet publish` profiles, electron-builder `win` targets, bundle targets in `tauri.conf.json`. Reuse what the project has. |
+| Existing auto-update code | Search for `electron-updater`, `tauri-plugin-updater`, `Velopack`, `Squirrel`, `releases/latest`. Reuse what exists; never add a second updater. |
 | Secrets/variables used by workflows | `${{ secrets.X }}` and `${{ vars.X }}` in the workflows (list the names, never values) |
 | Existing instructions | `CLAUDE.md`, `RELEASING.md`, `CONTRIBUTING.md`, `docs/` - reuse them, do not contradict them |
 | Token availability | `git credential fill` (check only that a password is returned; never print it) |

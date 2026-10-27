@@ -41,6 +41,7 @@ Also settle: the single source of truth for the version (one file), the tag form
 ## 7. What a release produces
 
 - The assets expected in the GitHub Release (installer, archives, packages) and their count, so the procedure can verify them.
+- For a Windows program: an installer EXE and a portable EXE (a single file that runs without installing). Recommended: build both in the release job on `windows-latest`, with the installer tool the project already has (Inno Setup, NSIS, or the packager's own installer target) and a single-file build for the portable one (PyInstaller `--onefile`, electron-builder `portable`, `dotnet publish` as one file). Name them with the version, for example `app-{version}-setup.exe` and `app-{version}-portable.exe`, and list both among the expected assets.
 - Signing, if any, and which secrets/variables the workflow needs (never committed; written to an untracked file during the build).
 
 ## 8. Issues
@@ -56,3 +57,13 @@ Also settle: the single source of truth for the version (one file), the tag form
 - Open it through VS Code Live Server on the repository root, or as a local file.
 - Language of the page text.
 - Whether the local tests also show a popup on failure (off by default).
+
+## 11. Automatic updates
+
+Ask only when the project ships a program that users install or run: an installer, an executable, a desktop or mobile app. A library, or a package that a package manager updates (pip, npm, NuGet, cargo), has no update system to add: delete the `## Automatic updates` section.
+
+- When it checks: at start-up in the background, at most once a day (recommended), or only from a menu item.
+- Which updater: a library for the stack when there is one (for example `electron-updater` for Electron, `tauri-plugin-updater` for Tauri, Velopack or Squirrel for .NET), otherwise a small checker that reads `releases/latest` and downloads the asset.
+- Checksum: the file is installed only when its SHA-256 matches the value published with the release (recommended, the minimum). Code signing, if the project already has it, is a stronger check on top.
+- Asset name: the pattern the updater looks for (for example `app-{version}-setup.exe`). The release workflow must produce exactly that name and publish the checksum file. The updater installs the installer EXE from section 7; the program does not update the portable EXE.
+- Visibility: the updater reads the release without a token, so the repository must be public. For a private repository the updater cannot read releases without a token, and a token must not ship inside the program. Tell the user this first, and ask where the assets should be published.

@@ -17,6 +17,7 @@ jobs:
     uses: ./.github/workflows/tests.yml
 
   build:
+    # TODO: windows-latest when the release builds Windows EXE files (installer and portable)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

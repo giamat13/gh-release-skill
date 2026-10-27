@@ -9,9 +9,9 @@ This skill **creates** release instructions and release tooling for a project. I
 
 What gets generated:
 
-1. **Release instructions**: a `## Releasing` section in the project's `CLAUDE.md` describing exactly how to release this project (versioning, notes, tests, push, dispatch, watching, closing issues), plus an `AGENTS.md` that points to `CLAUDE.md`.
+1. **Release instructions**: a `## Releasing` section in the project's `CLAUDE.md` describing exactly how to release this project (versioning, notes, tests, push, dispatch, watching, closing issues), plus an `AGENTS.md` that points to `CLAUDE.md`. For a program that users install or run, the section also says to add an automatic update system.
 2. **Release dashboard**: a live local web page plus scripts that run local tests, stop at the first failure, and watch the GitHub release workflow.
-3. **Workflows** (only if the repo has none): a test workflow and a release workflow.
+3. **Workflows** (only if the repo has none): a test workflow and a release workflow. For a Windows program, the release builds an installer EXE and a portable EXE.
 
 Files in this skill:
 
@@ -43,7 +43,7 @@ Follow `references/decisions.md`. Ask only what discovery could not answer, in o
    All instructions for this repository are in [CLAUDE.md](CLAUDE.md). Read it first and follow it.
    ```
    If `AGENTS.md` already exists, do not overwrite it: add that one line at the top instead.
-3. Replace every `{{PLACEHOLDER}}` with the discovered or decided value. Delete the sections and options that do not apply (for example pre-releases, if the user does not want them); do not leave placeholders, "if applicable" hints, or options the project does not use.
+3. Replace every `{{PLACEHOLDER}}` with the discovered or decided value. Delete the sections and options that do not apply (for example pre-releases, if the user does not want them, or `## Automatic updates` for a library or a package that a package manager updates); do not leave placeholders, "if applicable" hints, or options the project does not use.
 4. Every command in the result must be real for this project (actual test command, actual version file, actual workflow file name, actual default branch).
 5. Write it in the language the user asked for; keep file names, commands and code as they are.
 
@@ -59,13 +59,14 @@ Follow `references/decisions.md`. Ask only what discovery could not answer, in o
 
 ### Step 5: Workflows
 
-Only if the repo has no release workflow: copy `assets/templates/release.yml` and `tests.yml` to `.github/workflows/`, fill in the real build and test commands, and keep this structure: the release workflow is started by `workflow_dispatch`, runs the tests as a reusable workflow in parallel with the builds, and its `publish` job `needs` the tests and builds so nothing is published if they fail. If the repo already has workflows, adapt the instructions and dashboard to them instead of replacing them.
+Only if the repo has no release workflow: copy `assets/templates/release.yml` and `tests.yml` to `.github/workflows/`, fill in the real build and test commands. Keep this structure: the release workflow is started by `workflow_dispatch`, runs the tests as a reusable workflow in parallel with the builds, and its `publish` job `needs` the tests and builds so nothing is published if they fail. If the repo already has workflows, adapt the instructions and dashboard to them instead of replacing them. For a Windows program, the build job builds the installer and portable EXE files of `references/decisions.md` 7 on a `windows-latest` runner. If the program updates itself (`references/decisions.md` 11), the release job must publish the checksum file the updater checks, whether the workflow is new or already existed.
 
 ### Step 6: Verify what you generated
 
 - Run `python tools/release_status/status_page.py --once` and confirm `status-data.js` appears and the page opens with no errors.
 - Run one real local test through `run_local_tests.py <name>` and confirm the dashboard card shows it.
 - Re-read the generated instructions as someone who has never seen the project: every command must be runnable as written.
+- If the release builds EXE files and the tools are here, build both once locally, without publishing, and start the portable one to check that it opens.
 - Do not dispatch a release, push a tag, or publish anything while verifying.
 
 ### Step 7: Report

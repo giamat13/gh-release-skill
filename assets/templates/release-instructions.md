@@ -22,6 +22,15 @@ File: `{{NOTES_PATH}}` (it becomes the GitHub Release body). Format:
 
 {{NOTES_FORMAT}}
 
+## Automatic updates
+
+The program updates itself from this repository's GitHub releases. If it does not do that yet, add it as a normal change: tests first, then a release.
+
+- Updater: {{UPDATER}}.
+- It checks {{CHECK_RULE}}. It asks `https://api.github.com/repos/{{REPO}}/releases/latest` without a token and compares that tag with the version it runs. Pre-releases are never offered.
+- It downloads only the asset named `{{ASSET_PATTERN}}` and installs it only when the file's SHA-256 matches its line in `{{CHECKSUM_FILE}}`, which is published in the same release.
+- After step 10 of the procedure, check that `releases/latest` returns the new tag and that the assets have the names above. A renamed asset or a missing checksum file stops updates for every installed copy.
+
 ## Release dashboard
 
 A live local page that shows percent done, time left, what is happening now, the pipeline stages, a live log, the task list, the GitHub jobs and the local tests. Read-only: it never pushes or releases.

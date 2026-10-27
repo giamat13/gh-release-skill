@@ -6,9 +6,9 @@ The skill only **creates** the instructions and tooling. It never publishes a re
 
 ## What it generates
 
-1. **Release instructions**: a `## Releasing` section in the project's `CLAUDE.md` (created if missing, appended to otherwise), and an `AGENTS.md` that points to `CLAUDE.md`.
+1. **Release instructions**: a `## Releasing` section in the project's `CLAUDE.md` (created if missing, appended to otherwise), and an `AGENTS.md` that points to `CLAUDE.md`. For a program that users install or run, the section also says to add an automatic update system.
 2. **Release dashboard**: a local web page plus scripts that run the local tests (stopping at the first failure) and watch the GitHub release workflow. Copied to `tools/release_status/`.
-3. **Workflows** (only if the repository has none): a test workflow and a release workflow under `.github/workflows/`.
+3. **Workflows** (only if the repository has none): a test workflow and a release workflow under `.github/workflows/`. For a Windows program, the release also builds an installer EXE and a portable EXE.
 
 Existing files are extended, never overwritten.
 
