@@ -1,0 +1,19 @@
+# Files the dashboard writes while it runs (see SKILL.md, step 4)
+status.html
+status-data.js
+local-tests*.json
+local-single.json
+activity.json
+cycle.json
+todo.json
+archive/
+
+# Python
+__pycache__/
+*.pyc
+
+# Editors and OS
+.vscode/
+.idea/
+Thumbs.db
+.DS_Store

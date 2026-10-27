@@ -1,0 +1,16 @@
+name: tests
+# Runs on every push that changes more than docs, and is reused by the release workflow (workflow_call).
+on:
+  push:
+    branches: [main]
+    paths-ignore: ["**.md", "docs/**"]
+  workflow_call:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # TODO: set up the language toolchain (setup-python / setup-node / ...) and install dependencies
+      # TODO: run the project's tests; add more jobs (other OSes, browser/UI tests) next to this one
+      - run: echo "replace with the project's test command"

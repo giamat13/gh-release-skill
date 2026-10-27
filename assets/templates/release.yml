@@ -1,0 +1,68 @@
+name: release
+# Started by hand (workflow_dispatch) on the default branch. The tag vX.Y.Z is created here from the version file.
+on:
+  workflow_dispatch:
+    inputs:
+      prerelease:
+        description: "Mark as a pre-release"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+jobs:
+  tests:
+    # the same tests as on every push, in parallel with the build: nothing is published unless they pass
+    uses: ./.github/workflows/tests.yml
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Read the version
+        shell: bash
+        run: |
+          # TODO: print the version from the project's version file
+          VERSION=$(echo "0.0.0")
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+          echo "TAG=v$VERSION" >> "$GITHUB_ENV"
+      # TODO: build the release files into ./dist
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-files
+          path: dist
+          if-no-files-found: error
+
+  publish:
+    needs: [tests, build]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-files
+          path: dist
+      - name: Read the version
+        shell: bash
+        run: |
+          # TODO: same version read as in the build job
+          VERSION=$(echo "0.0.0")
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+      - name: Create the tag and the release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PRERELEASE: ${{ inputs.prerelease }}
+        run: |
+          TAG="v$VERSION"
+          TITLE="$VERSION"
+          if [ "$PRERELEASE" = "true" ]; then
+            # pre-release OF the version: tag vX.Y.Z-beta.N, N = highest existing + 1
+            N=$(gh api "repos/$GITHUB_REPOSITORY/git/matching-refs/tags/v$VERSION-beta." --jq 'length')
+            N=$((N + 1))
+            TAG="v$VERSION-beta.$N"
+            TITLE="$VERSION (pre $N)"
+            FLAGS="--prerelease"
+          fi
+          gh release create "$TAG" dist/* --title "$TITLE" --notes-file "docs/release-notes-v$VERSION.md" --target "$GITHUB_SHA" $FLAGS
