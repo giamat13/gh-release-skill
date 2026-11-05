@@ -1,11 +1,11 @@
-"""Runs the local tests one after the other and writes their progress to local-tests.json, which tools/release_status/status_page.py
-shows live: what is running, how many checks of it passed so far, its last lines, what passed, how long is left. How long each test
+"""Runs the local tests one after the other and writes their progress to local-tests.json, which watch_tests.py reads:
+what is running, how many checks of it passed so far, its last lines, what passed, how long is left. How long each test
 took last time is kept in local-tests-history.json and is the estimate for the next run. Nothing here touches a real library: the
 tests use throw-away profiles.
 
     python tools/release_status/run_local_tests.py            the usual set
     python tools/release_status/run_local_tests.py test_a test_b      only these
-    python tools/release_status/run_local_tests.py test_a               one test: written to local-single.json, shown in its own card
+    python tools/release_status/run_local_tests.py test_a               one test: written to local-single.json
 """
 import json
 import os
@@ -23,7 +23,7 @@ HISTORY = HERE / "local-tests-history.json"
 # TODO: the project's local tests: names of files in tools/ (tools/<name>.py), or entries handled in command() below
 DEFAULT = ["test_a", "test_b"]
 GUESS = 45          # seconds, for a test that has never run
-TAIL = 5            # lines of the running test that the page shows
+TAIL = 5            # lines of the running test kept in the progress file
 WRITE_EVERY = 0.4   # seconds between writes of the progress file while a test runs
 
 
@@ -36,7 +36,7 @@ def load(p, default):
 
 def notify_failure(name, detail):
     """A message box on the user's screen the moment a test fails (the run goes on; the box is its own process, so it stays up)."""
-    if sys.platform != "win32" or not os.environ.get("RELEASE_TEST_POPUP"):   # no box by default: the failure shows on the dashboard; set RELEASE_TEST_POPUP=1 to get it back
+    if sys.platform != "win32" or not os.environ.get("RELEASE_TEST_POPUP"):   # no box by default: set RELEASE_TEST_POPUP=1 to get it back
         return
     code = "import ctypes,sys; ctypes.windll.user32.MessageBoxW(0, sys.argv[1], 'a test failed', 0x10 | 0x40000)"   # error icon, topmost
     try:
@@ -138,8 +138,7 @@ def main():
         workers = max(1, int(args[i + 1]))
         del args[i:i + 2]
     names = args or DEFAULT
-    if args and len(names) == 1:                 # one test on its own: its own file, so a run of the whole set that is going on is not overwritten; the page shows it in its own card
-        global PROGRESS
+    if args and len(names) == 1:                 # one test on its own: its own file, so a run of the whole set that is going on is not overwritten        global PROGRESS
         PROGRESS = HERE / "local-single.json"
     workers = workers or len(names)
     hist = load(HISTORY, {})

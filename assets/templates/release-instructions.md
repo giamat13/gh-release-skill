@@ -31,19 +31,15 @@ The program updates itself from this repository's GitHub releases. If it does no
 - It downloads only the asset named `{{ASSET_PATTERN}}` and installs it only when the file's SHA-256 matches its line in `{{CHECKSUM_FILE}}`, which is published in the same release.
 - After step 10 of the procedure, check that `releases/latest` returns the new tag and that the assets have the names above. A renamed asset or a missing checksum file stops updates for every installed copy.
 
-## Release dashboard
+## Progress view
 
-A live local page that shows percent done, time left, what is happening now, the pipeline stages, a live log, the task list, the GitHub jobs and the local tests. Read-only: it never pushes or releases.
+Progress is shown in the agent-dashboard: https://github.com/giamat13/agent-dashboard. It is set up separately; this repository does not generate a page.
 
-- Start it (it runs until the version is published, at most 3 hours; a lock prevents a second copy; it reloads itself when its own file is edited):
-  `{{DASHBOARD_START_COMMAND}}`
-- Open `{{DASHBOARD_URL}}`.
-- Keep it current: `{{LOG_COMMAND}} "what I am doing now"` at every step; rewrite `tools/release_status/todo.json` (`[{"text": "...", "state": "todo|run|done"}]`) whenever a task starts or ends; `{{RESET_COMMAND}}` clears it.
-- Check at the start of a session that it is alive (`status-data.js` modified in the last minute).
+- Keep it current: update its task list at every step, and show each long command (tests, build, release watch) in it, as its README explains.
 
 ## Local tests
 
-`{{TEST_COMMAND}}` runs the whole set (`{{TEST_COUNT}}` suites) and writes `local-tests.json`, which the dashboard shows. `{{TEST_COMMAND}} <names>` runs only those; a single name is shown in its own card.
+`{{TEST_COMMAND}}` runs the whole set (`{{TEST_COUNT}}` suites) and writes `local-tests.json`, which `watch_tests.py` reads. `{{TEST_COMMAND}} <names>` runs only those; a single name is shown in its own card.
 
 - {{PARALLEL_RULE}}
 - Pass nothing but test names or `--parallel N` / `--serial`: any other word is run as a test name and shows up as a failed test.
@@ -55,7 +51,7 @@ A live local page that shows percent done, time left, what is happening now, the
 
 ## Procedure
 
-1. Update the dashboard (`todo.json`, `log.py`).
+1. Update the agent-dashboard: its task list and the current step.
 2. Collect what goes in: open issues and `git log <last-tag>..HEAD --oneline`. Decide the version number.
 3. Bump `{{VERSION_FILE}}` and write the release notes.
 4. {{REAL_CHECK_STEP}}
@@ -66,7 +62,7 @@ A live local page that shows percent done, time left, what is happening now, the
 9. Watch it: `{{WATCH_RELEASE_COMMAND}}` in the background (prints the jobs on change, exits 1 at the first failed job, 0 on success). At the first failure: read the job log (`GET /actions/jobs/<id>/logs`), cancel the run (`POST /actions/runs/<id>/cancel`), fix, push, dispatch again.
 10. On success check that the Release has all its assets ({{EXPECTED_ASSETS}}).
 11. {{ISSUES_STEP}}
-12. Finish the dashboard: `todo.json` all `done`, a last log line.
+12. Finish the agent-dashboard: mark every task done.
 
 Typical durations: {{TYPICAL_DURATIONS}}
 
@@ -78,9 +74,7 @@ Typical durations: {{TYPICAL_DURATIONS}}
 
 | Symptom | Action |
 |---|---|
-| Dashboard shows "everything failed" | A stale `local-tests.json` from a killed run: delete it |
 | Tests fail on a busy port | A test process or server is left over: close it, run again |
 | `git push` of a tag fails | Do not push tags; dispatch the workflow |
 | API returns 401 | `git credential fill` returned an empty password: sign in to git again |
-| Dashboard timer stopped | A GitHub job failed; it stops at the first failure |
 {{EXTRA_PROBLEMS}}

@@ -1,6 +1,6 @@
 ---
 name: gh-release
-description: Generate a project's GitHub release process - a written release procedure (RELEASING.md, a CLAUDE.md section, or a project skill), a live release dashboard with local-test tooling, and release/test workflows if missing. Use when the user wants to set up releases for a repo, create release instructions, add a release dashboard, or document how to release. This skill only creates the instructions and tooling; it does not perform a release.
+description: Generate a project's GitHub release process - a written release procedure (RELEASING.md, a CLAUDE.md section, or a project skill), local-test and release-watch tooling, and release/test workflows if missing. Use when the user wants to set up releases for a repo, create release instructions, add release tests, or document how to release. This skill only creates the instructions and tooling; it does not perform a release.
 ---
 
 # gh-release (generator)
@@ -10,7 +10,7 @@ This skill **creates** release instructions and release tooling for a project. I
 What gets generated:
 
 1. **Release instructions**: a `## Releasing` section in the project's `CLAUDE.md` describing exactly how to release this project (versioning, notes, tests, push, dispatch, watching, closing issues), plus an `AGENTS.md` that points to `CLAUDE.md`. For a program that users install or run, the section also says to add an automatic update system.
-2. **Release dashboard**: a live local web page plus scripts that run local tests, stop at the first failure, and watch the GitHub release workflow.
+2. **Local tests and release watcher**: scripts that run local tests, stop at the first failure, and watch the GitHub release workflow. No HTML page is generated; progress is shown in the agent-dashboard (https://github.com/giamat13/agent-dashboard).
 3. **Workflows** (only if the repo has none): a test workflow and a release workflow. For a Windows program, the release builds an installer EXE and a portable EXE.
 
 Files in this skill:
@@ -19,7 +19,7 @@ Files in this skill:
 - `references/discovery.md` - what to detect in the repo, and how.
 - `assets/templates/release-instructions.md` - the template for the generated instructions (placeholders are `{{LIKE_THIS}}`).
 - `assets/templates/tests.yml`, `assets/templates/release.yml` - generic workflow templates.
-- `assets/dashboard/` - the dashboard and test tooling to copy and adapt: `status_page.py` (it writes `status.html` itself), `run_local_tests.py`, `watch_tests.py`, `watch_release.py`, `log.py`, `reset.py`.
+- `assets/dashboard/` - the test and watch tooling to copy and adapt: `run_local_tests.py`, `watch_tests.py`, `watch_release.py`.
 
 ## Procedure
 
@@ -47,14 +47,14 @@ Follow `references/decisions.md`. Ask only what discovery could not answer, in o
 4. Every command in the result must be real for this project (actual test command, actual version file, actual workflow file name, actual default branch).
 5. Write it in the language the user asked for; keep file names, commands and code as they are.
 
-### Step 4: Install the dashboard
+### Step 4: Install the test and watch tooling
 
-1. Copy `assets/dashboard/*` to `tools/release_status/` (or the folder the user chose).
+1. Copy `run_local_tests.py`, `watch_tests.py` and `watch_release.py` from `assets/dashboard/` to `tools/release_status/` (or the folder the user chose).
 2. Adapt it:
-   - `status_page.py`: `VERSION_FILE` and `VERSION_RE` (where the version number lives and a regex for it), `RELEASE_WORKFLOW` (the `name:` of the release workflow), and the `JOBS`/`STEPS` dictionaries (the project's workflow job and step names, each with a one-line plain description). The repository and default branch are read from the `origin` remote automatically.
    - `run_local_tests.py`: `DEFAULT` (the project's test commands or names) and `command()` (how one test is started).
    - `watch_release.py` and `watch_tests.py`: normally need no change.
-3. Add the generated files to `.gitignore`: `status.html`, `status-data.js`, `local-tests*.json`, `local-single.json`, `activity.json`, `cycle.json`, `archive/` (adjust if the page is kept elsewhere).
+   - Progress is not shown in a generated page. Point the user to the agent-dashboard (https://github.com/giamat13/agent-dashboard) instead.
+3. Add the generated files to `.gitignore`: `local-tests*.json` and `local-single.json` (adjust if they are kept elsewhere).
 4. The GitHub token comes from `git credential fill`; make sure nothing writes it to a file or prints it.
 
 ### Step 5: Workflows
@@ -63,12 +63,12 @@ Only if the repo has no release workflow: copy `assets/templates/release.yml` an
 
 ### Step 6: Verify what you generated
 
-- Run `python tools/release_status/status_page.py --once` and confirm `status-data.js` appears and the page opens with no errors.
-- Run one real local test through `run_local_tests.py <name>` and confirm the dashboard card shows it.
+- Run `python tools/release_status/watch_tests.py` once and confirm `local-tests.json` appears and the run ends with `FINISHED OK` or prints the first failure.
+- Run one real local test through `run_local_tests.py <name>` and confirm `local-single.json` shows it as done.
 - Re-read the generated instructions as someone who has never seen the project: every command must be runnable as written.
 - If the release builds EXE files and the tools are here, build both once locally, without publishing, and start the portable one to check that it opens.
 - Do not dispatch a release, push a tag, or publish anything while verifying.
 
 ### Step 7: Report
 
-Tell the user which files were created, how to open the dashboard, and what the instructions say a release looks like, in a few lines.
+Tell the user which files were created, where to follow progress (the agent-dashboard link), and what the instructions say a release looks like, in a few lines.

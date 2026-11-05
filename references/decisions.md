@@ -52,10 +52,10 @@ Also settle: the single source of truth for the version (one file), the tag form
 
 - Delete the release and its tag (`gh release delete vX.Y.Z --cleanup-tag -y`) and release again, or ship a new patch version. Write which.
 
-## 10. Dashboard
+## 10. Progress view and failure popup
 
-- Open it through VS Code Live Server on the repository root, or as a local file.
-- Language of the page text.
+Fixed, not a question: progress is shown in the agent-dashboard (https://github.com/giamat13/agent-dashboard). The skill generates no HTML page.
+
 - Whether the local tests also show a popup on failure (off by default).
 
 ## 11. Automatic updates

@@ -1,13 +1,13 @@
 # gh-release
 
-A Claude Code skill that generates a GitHub release process for a repository. It writes the release instructions, a live local release dashboard with local-test tooling, and release/test workflows if the repository does not have them yet.
+A Claude Code skill that generates a GitHub release process for a repository. It writes the release instructions, local-test and release-watch tooling, and release/test workflows if the repository does not have them yet.
 
 The skill only **creates** the instructions and tooling. It never publishes a release itself.
 
 ## What it generates
 
 1. **Release instructions**: a `## Releasing` section in the project's `CLAUDE.md` (created if missing, appended to otherwise), and an `AGENTS.md` that points to `CLAUDE.md`. For a program that users install or run, the section also says to add an automatic update system.
-2. **Release dashboard**: a local web page plus scripts that run the local tests (stopping at the first failure) and watch the GitHub release workflow. Copied to `tools/release_status/`.
+2. **Local tests and release watcher**: scripts that run the local tests (stopping at the first failure) and watch the GitHub release workflow. Copied to `tools/release_status/`. Progress is shown in the [agent-dashboard](https://github.com/giamat13/agent-dashboard); no HTML page is generated.
 3. **Workflows** (only if the repository has none): a test workflow and a release workflow under `.github/workflows/`. For a Windows program, the release also builds an installer EXE and a portable EXE.
 
 Existing files are extended, never overwritten.
@@ -16,7 +16,7 @@ Existing files are extended, never overwritten.
 
 - A GitHub repository with a configured `origin` remote
 - Git, with a GitHub token available through `git credential fill`
-- Python 3 for the dashboard scripts
+- Python 3 for the test scripts
 - The GitHub CLI (`gh`) is optional
 
 ## Install
@@ -42,7 +42,7 @@ or invoke it directly with `/gh-release`. The skill reads the repository first, 
 | `references/discovery.md` | What to detect in the repository, and how |
 | `references/decisions.md` | The decisions to settle with the user, with recommended defaults |
 | `assets/templates/` | Templates for the generated instructions and workflows |
-| `assets/dashboard/` | Dashboard and local-test tooling copied into the target repository |
+| `assets/dashboard/` | Local-test and release-watch tooling copied into the target repository |
 
 ## License
 
